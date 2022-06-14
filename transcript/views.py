@@ -17,10 +17,11 @@ import ast
 
 
 from .AES.crypto import AESCipher
+import os
 
 
 # Create your views here.
-SECRET_kEY_HASH = "AUTHEN_SYSTEM_UY1"
+SECRET_kEY_HASH = os.environ.get("AES_KEY")
 
 
 class EtudiantViewSet(viewsets.ModelViewSet):
