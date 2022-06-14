@@ -20,7 +20,7 @@ from .AES.crypto import AESCipher
 
 
 # Create your views here.
-SECRET_kEY_HASH = "AUTHENTIFICATION_NEW_SYSTEM_UY1"
+SECRET_kEY_HASH = "AUTHEN_SYSTEM_UY1"
 
 
 class EtudiantViewSet(viewsets.ModelViewSet):
@@ -400,17 +400,8 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
             transcript_number = str(nbre_transcript_print+1) + '/' + name_abrv + \
                 '/'+code_level+'/'+abrev_faculty+'/'+filiere+'/'+abrev_academic_year
 
-            data_transcript = {
-                "numero": transcript_number,
-                "matricule": etudiant_serializer.data['matricule'],
-                "name": etudiant_serializer.data['name'],
-                "surname": etudiant_serializer.data['surname'],
-                "mgp": mgp,
-                "final_decision": final_decision,
-                "hash": public_hash,
-            }
-            msg = transcript_number+'-'+etudiant_serializer.data['matricule']+'-' + etudiant_serializer.data['name'] + \
-                '-' + etudiant_serializer.data['surname']+'-' + \
+            msg = transcript_number+'-'+etudiant_serializer.data['matricule']+'-' + etudiant_serializer.data['name'].lower() + \
+                '-' + etudiant_serializer.data['surname'].lower() + '-' + \
                 str(mgp)+'-'+final_decision+'-' + public_hash
             # msg = SECRET_kEY_HASH+'-'+str(data_transcript)
 
@@ -448,35 +439,43 @@ class DecryptDataViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         elements = request.data
-        data = elements['data']
+        try:
+            data = elements['data']
+            try:
+                aes = AESCipher(SECRET_kEY_HASH)
+                plaint_data = aes.decrypt(data)
+                transcript_data = plaint_data.split('-')
+                number = transcript_data[0]
+                matricule = transcript_data[1]
+                name = transcript_data[2]
+                surname = transcript_data[3]
+                mgp = transcript_data[4]
+                decision = transcript_data[5]
+                hash = transcript_data[6]
 
-        aes = AESCipher(SECRET_kEY_HASH)
-        plaint_data = aes.decrypt(data)
-        transcript_data = plaint_data.split('-')
+                data_transcript = {
+                    "number": number,
+                    "matricule": matricule,
+                    "name": name,
+                    "surname": surname,
+                    "mgp": mgp,
+                    "decision": decision,
+                    "hash": hash,
+                }
 
-        number = transcript_data[0]
-        matricule = transcript_data[1]
-        name = transcript_data[2]
-        surname = transcript_data[3]
-        mgp = transcript_data[4]
-        decision = transcript_data[5]
-        hash = transcript_data[6]
+                info_serializers = CipherSerializer(data_transcript)
+                return Response({
+                    'data': info_serializers.data,
+                }, status=status.HTTP_201_CREATED)
+            except:
+                return Response({
+                    'detail': 'Donnees invalides'
+                }, status=status.HTTP_400_BAD_REQUEST)
 
-        data_transcript = {
-            "number": number,
-            "matricule": matricule,
-            "name": name,
-            "surname": surname,
-            "mgp": mgp,
-            "decision": decision,
-            "hash": hash,
-        }
-
-        info_serializers = CipherSerializer(data_transcript)
-
-        return Response({
-            'data': info_serializers.data,
-        }, status=status.HTTP_201_CREATED)
+        except:
+            return Response({
+                'detail': 'Donnees invalides'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VerifNewTranscriptViewSet(viewsets.ModelViewSet):
@@ -484,8 +483,8 @@ class VerifNewTranscriptViewSet(viewsets.ModelViewSet):
     def create(self, request):
         elements = request.data
 
-        data_to_compare = elements['number']+'-'+elements['matricule']+'-' + elements['name'] + \
-            '-' + elements['surname']+'-' + elements['mgp'] + \
+        data_to_compare = elements['number']+'-'+elements['matricule']+'-' + elements['name'].lower() + \
+            '-' + elements['surname'].lower() + '-' + elements['mgp'] + \
             '-'+elements['decision']+'-'+elements['hash']
 
         # Get student
@@ -499,8 +498,8 @@ class VerifNewTranscriptViewSet(viewsets.ModelViewSet):
             if(len(search) > 0):
                 transcript = TranscriptSerializer(search[0]).data
 
-                data_to_hash = transcript['number']+'-'+transcript['etudiant']['matricule']+'-' + transcript['etudiant']['name'] + '-' + \
-                    transcript['etudiant']['surname'] + '-'+str(transcript['mgp']) + \
+                data_to_hash = transcript['number']+'-'+transcript['etudiant']['matricule']+'-' + transcript['etudiant']['name'].lower() + '-' + \
+                    transcript['etudiant']['surname'].lower() + '-'+str(transcript['mgp']) + \
                     '-'+transcript['decision']+'-'+transcript['hash']
                 print(data_to_hash)
                 print(data_to_compare)

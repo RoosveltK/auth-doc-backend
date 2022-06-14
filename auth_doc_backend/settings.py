@@ -149,6 +149,8 @@ AUTH_USER_MODEL = "users.User"
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:4200',
     'http://localhost:8000',
+    'http://localhost:8080',
+    'https://auth-doc-app.vercel.app'
 )
 
 # CORS_ORIGIN_WHITELIST = ['*']
