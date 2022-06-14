@@ -26,7 +26,7 @@ Version de Python >= 3.6, et une version de Django >= 3.2
 
 1. Cloner le repo
    ```sh
-   git clone https://github.com/ZiyoumaSchool/todo_formation_flutter.git
+   git clone https://github.com/RoosveltK/auth-doc-backend.git
    ```
 2. Installer les dépendances
    ```sh
@@ -41,4 +41,4 @@ Version de Python >= 3.6, et une version de Django >= 3.2
 
 KENNE NGNINPIA Roosvelt - [@RoosveltK](https://github.com/RoosveltK) - roosvelt.kenne.9817@facsciences-uy1.cm
 
-Lien du projet: [https://github.com/Soutenance-2021-2022/Project Linkfront-end](https://github.com/Soutenance-2021-2022/front-end)
+Lien du projet: [https://github.com/RoosveltK/auth-doc-backend](https://github.com/RoosveltK/auth-doc-backend)
