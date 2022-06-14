@@ -350,14 +350,14 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
                     note_ee = self.determined_intermediare_note(notes)
                     decision = self.get_letter_grade(note_ee)
 
-                    # Evaluation.objects.create(
-                    #     etudiant=Etudiant.objects.get(id=pk),
-                    #     note=note_ee,
-                    #     examen='EE',
-                    #     ue=Ue.objects.get(id=item['ue']['id']),
-                    #     grade=decision['grade'],
-                    #     decision=decision['decision'],
-                    # )
+                    Evaluation.objects.create(
+                        etudiant=Etudiant.objects.get(id=pk),
+                        note=note_ee,
+                        examen='EE',
+                        ue=Ue.objects.get(id=item['ue']['id']),
+                        grade=decision['grade'],
+                        decision=decision['decision'],
+                    )
 
                     notes_credit = {
                         "note": decision['mgp'],
