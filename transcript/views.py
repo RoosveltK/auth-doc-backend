@@ -21,7 +21,8 @@ import os
 
 
 # Create your views here.
-SECRET_kEY_HASH = os.environ.get("AES_KEY")
+# SECRET_kEY_HASH = os.environ.get("AES_KEY")
+SECRET_kEY_HASH = "AUTHEN_SYSTEM_UY1"
 
 
 class EtudiantViewSet(viewsets.ModelViewSet):
