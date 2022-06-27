@@ -159,12 +159,10 @@ class AddNoteAtViewSet(viewsets.ModelViewSet):
                         note=item['note'],
                         examen=examen[0]
                     )
-                    return Response({
-                        'detail': 'Note assignée avec succès'
-                    }, status=status.HTTP_201_CREATED)
+                    return Response({'detail':  "Note de l'étudiant "+item['name']+" de matricule "+item['matricule']+" assignée avec succès "}, status=status.HTTP_201_CREATED)
 
                 else:
-                    return Response({'detail': "L'étudiant "+item['name']+" de matricule "+item['matricule']+" a déja recu une note pour cet examen, modifié la plutot "}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({'detail': "L'étudiant "+item['name']+" de matricule "+item['matricule']+" a déja reçu une note pour cette évaluation"}, status=status.HTTP_400_BAD_REQUEST)
             else:
                 return Response({
                     'detail': 'Aucun étudiant trouvé'
