@@ -50,25 +50,28 @@ class Amphi(models.Model):
 
 class Evaluation(models.Model):
 
-    EXAMENS_CHOICES = (
-        ('CC', 'CC'),
-        ('SN', 'SN'),
-        ('TP', 'TP'),
-        ('RATTRAPAGE', 'RATTRAPAGE'),
-        ('EE', 'EE'),
-    )
     note = models.DecimalField(max_digits=4, decimal_places=2)
     decision = models.CharField(
         max_length=10, default=None, blank=True, null=True)
     grade = models.CharField(max_length=5, default=None, blank=True, null=True)
-    examen = models.CharField(
-        max_length=10, choices=EXAMENS_CHOICES, default=None)
+    examen = models.ForeignKey(
+        'Examen', null=False, default=None, on_delete=models.CASCADE)
     ue = models.ForeignKey('UE', null=False, on_delete=models.CASCADE)
     etudiant = models.ForeignKey(
         'Etudiant', null=False, default=None, on_delete=models.CASCADE)
 
 
 class Semester(models.Model):
+    code = models.CharField(max_length=5)
+    name = models.CharField(max_length=200)
+    academic_year = models.ForeignKey(
+        'AcademicYear', null=False, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.code
+
+
+class Examen(models.Model):
     code = models.CharField(max_length=5)
     name = models.CharField(max_length=200)
     academic_year = models.ForeignKey(

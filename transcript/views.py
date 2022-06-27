@@ -4,8 +4,8 @@ from django.shortcuts import render
 from rest_framework import viewsets, generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from transcript.models import AcademicYear, Amphi, Etudiant, Evaluation, SchoolAt, Transcript, Ue
-from transcript.serializers import AmphiSerializer, EtudiantSerializer, EvaluationSerializer, SchoolAtSerializer, TranscriptNormalSerializer, TranscriptSerializer, UeSerializer, CipherSerializer
+from transcript.models import AcademicYear, Amphi, Etudiant, Evaluation, Examen, SchoolAt, Transcript, Ue
+from transcript.serializers import AmphiSerializer, EtudiantSerializer, EvaluationSerializer, ExamenSerializer, SchoolAtSerializer, TranscriptNormalSerializer, TranscriptSerializer, UeSerializer, CipherSerializer
 from django.db.models import Q
 
 from rest_framework import status
@@ -145,19 +145,34 @@ class AddNoteAtViewSet(viewsets.ModelViewSet):
 
     def create(self, request):
         elements = request.data
-        for item in elements['data']:
+        item = elements['data']
+        try:
             etudiant = Etudiant.objects.filter(matricule=item['matricule'])
+            examen = Examen.objects.filter(id=elements['examen'])
             if(len(etudiant) > 0):
-                Evaluation.objects.create(
-                    etudiant=etudiant[0],
-                    ue=Ue.objects.get(id=elements['ue']),
-                    note=item['note'],
-                    examen=elements['examen']
-                )
+                is_exist = Evaluation.objects.filter(
+                    etudiant=etudiant[0].id).filter(examen=examen[0].id)
+                if(len(is_exist) == 0):
+                    Evaluation.objects.create(
+                        etudiant=etudiant[0],
+                        ue=Ue.objects.get(id=elements['ue']),
+                        note=item['note'],
+                        examen=examen[0]
+                    )
+                    return Response({
+                        'detail': 'Note assignée avec succès'
+                    }, status=status.HTTP_201_CREATED)
 
-        return Response({
-            'data': {}
-        }, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({'detail': "L'étudiant "+item['name']+" de matricule "+item['matricule']+" a déja recu une note pour cet examen, modifié la plutot "}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({
+                    'detail': 'Aucun étudiant trouvé'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except:
+            return Response({
+                'detail': 'Une erreur est survenue'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class StudentSchoolATViewSet(viewsets.ModelViewSet):
@@ -468,7 +483,7 @@ class DecryptDataViewSet(viewsets.ModelViewSet):
                 info_serializers = CipherSerializer(data_transcript)
                 return Response({
                     'data': info_serializers.data,
-                }, status=status.HTTP_201_CREATED)
+                }, status=status.HTT201_CREATED)
             except:
                 return Response({
                     'detail': 'Donnees invalides'
@@ -514,7 +529,6 @@ class VerifNewTranscriptViewSet(viewsets.ModelViewSet):
                 hash_data_to_compare.update(data_to_compare.encode('utf-8'))
 
                 if(hash_data_to_hash.digest() == hash_data_to_compare.digest()):
-
                     return Response({
                         'data': transcript['id']
                     })
@@ -530,3 +544,14 @@ class VerifNewTranscriptViewSet(viewsets.ModelViewSet):
             return Response({
                 'detail': 'Ce relevé n\'existe pas'
             }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ExamViewSet(viewsets.ModelViewSet):
+    queryset = Examen.objects.all()
+    serializer_class = ExamenSerializer
+
+    def get(self, request):
+        serializer = ExamenSerializer(Examen.objects.all(), many=True)
+        return Response({
+            "data": serializer.data
+        })

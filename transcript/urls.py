@@ -2,7 +2,7 @@
 # from rest_framework import routers
 from django import views
 from django.urls import path
-from transcript.views import AddNoteAtViewSet, AmphiViewSet, DecryptDataViewSet, EtudiantViewSet, EvaluationViewSet, GetTranscriptInfoView, OperationTranscriptViewSet, StudentEvaluationViewSet, StudentSchoolATViewSet, TranscriptApiViewSet, SchooAtViewSet, TranscriptViewSet, UeAmphiViewSet, VerifNewTranscriptViewSet
+from transcript.views import AddNoteAtViewSet, AmphiViewSet, DecryptDataViewSet, EtudiantViewSet, EvaluationViewSet, ExamViewSet, GetTranscriptInfoView, OperationTranscriptViewSet, StudentEvaluationViewSet, StudentSchoolATViewSet, TranscriptApiViewSet, SchooAtViewSet, TranscriptViewSet, UeAmphiViewSet, VerifNewTranscriptViewSet
 
 # router = routers.DefaultRouter()
 # router.register('etudiants',EtudiantViewSet)
@@ -43,6 +43,9 @@ urlpatterns = [
         'get': 'retrieve'
     })),
     path('amphis', AmphiViewSet.as_view({
+         "get": "list"
+         })),
+    path('examens', ExamViewSet.as_view({
          "get": "list"
          })),
     path('student_note/<int:pk>', StudentEvaluationViewSet.as_view({
