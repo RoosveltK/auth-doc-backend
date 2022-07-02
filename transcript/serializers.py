@@ -149,20 +149,29 @@ class TranscriptNormalSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class EvaluationSerializer(serializers.ModelSerializer):
-    ue = UeRelatedField(queryset=Ue.objects.all(), many=False)
-
-    class Meta:
-        model = Evaluation
-        fields = '__all__'
-
-
 class ExamenSerializer(serializers.ModelSerializer):
     academic_year = AcademicRelatedField(
         queryset=AcademicYear.objects.all(), many=False)
 
     class Meta:
         model = Examen
+        fields = '__all__'
+
+
+class ExamenRelatedField(serializers.RelatedField):
+    def to_representation(self, instance):
+        return ExamenSerializer(instance).data
+
+    def to_internal_value(self, data):
+        return self.queryset.get(pk=data)
+
+
+class EvaluationSerializer(serializers.ModelSerializer):
+    ue = UeRelatedField(queryset=Ue.objects.all(), many=False)
+    examen = ExamenRelatedField(queryset=Examen.objects.all(), many=False)
+
+    class Meta:
+        model = Evaluation
         fields = '__all__'
 
 

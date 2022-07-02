@@ -17,6 +17,7 @@ import ast
 
 
 from .AES.crypto import AESCipher
+from .TranscriptOperation.transcript_operation import TranscriptOperation
 import os
 
 
@@ -234,90 +235,6 @@ class StudentEvaluationViewSet(viewsets.ModelViewSet):
 
 class OperationTranscriptViewSet(viewsets.ModelViewSet):
 
-    def generate_name_initial(self, name, surname):
-        full_name = name + ' '+surname
-        full_name_split = full_name.split()
-        name_size = len(full_name_split) - 1
-        i = 0
-        initial = ''
-        while(name_size >= i):
-            initial += full_name_split[i][0][:1]
-            i += 1
-        return initial[:3]
-
-    def determined_intermediare_note(self, notes):
-        total = 0
-        for item in notes:
-            if(item['ue']['has_tp'] == True):
-                if(item['examen'] == "CC"):
-                    total += float(item['note'])
-                if(item['examen'] == "SN"):
-                    total += float(item['note'])*2
-                if(item['examen'] == "TP"):
-                    total += float(item['note'])*2
-            else:
-                if(item['examen'] == "CC"):
-                    total += float(item['note'])*1.5
-                if(item['examen'] == "SN"):
-                    total += float(item['note'])*3.5
-        return total
-
-    def get_letter_grade(self, notefinale):
-        decision = {
-            "grade": '',
-            "mgp": 0.0,
-            "decision": ''
-        }
-        if 80 <= notefinale and notefinale <= 100:
-            decision['grade'] = 'A'
-            decision['mgp'] = 4.00
-            decision['decision'] = "CA"
-        elif 75 <= notefinale and notefinale <= 79:
-            decision['grade'] = 'A-'
-            decision['mgp'] = 3.70
-            decision['decision'] = "CA"
-        elif 70 <= notefinale and notefinale <= 74:
-            decision['grade'] = 'B+'
-            decision['mgp'] = 3.30
-            decision['decision'] = "CA"
-        elif 65 <= notefinale and notefinale <= 69:
-            decision['grade'] = 'B'
-            decision['mgp'] = 3.00
-            decision['decision'] = "CA"
-        elif 60 <= notefinale and notefinale <= 64:
-            decision['grade'] = 'B-'
-            decision['mgp'] = 2.70
-            decision['decision'] = "CA"
-        elif 55 <= notefinale and notefinale <= 59:
-            decision['grade'] = 'C+'
-            decision['mgp'] = 2.30
-            decision['decision'] = "CA"
-        elif 50 <= notefinale and notefinale <= 54:
-            decision['grade'] = 'C'
-            decision['mgp'] = 2.00
-            decision['decision'] = "CA"
-        elif 45 <= notefinale and notefinale <= 49:
-            decision['grade'] = 'C-'
-            decision['mgp'] = 1.70
-            decision['decision'] = "CANT"
-        elif 40 <= notefinale and notefinale <= 44:
-            decision['grade'] = 'D+'
-            decision['mgp'] = 1.30
-            decision['decision'] = "CANT"
-        elif 35 <= notefinale and notefinale <= 39:
-            decision['grade'] = 'D'
-            decision['mgp'] = 1.00
-            decision['decision'] = "CANT"
-        elif 30 <= notefinale and notefinale <= 34:
-            decision['grade'] = 'E'
-            decision['mgp'] = 0.00
-            decision['decision'] = "NC"
-        else:
-            decision['grade'] = 'F'
-            decision['mgp'] = 0.00
-            decision['decision'] = "NC"
-        return decision
-
     def retrieve(self, request, pk=None):
         search_transcript = Transcript.objects.filter(etudiant=pk)
 
@@ -335,9 +252,6 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
             school_info = SchoolAt.objects.get(etudiant=pk)
             school_info_serializer = SchoolAtSerializer(school_info)
 
-            # nbre of transcript print
-            nbre_transcript_print = Transcript.objects.all().count()
-
             # Get all Ue of Class
             ue_amphi = Ue.objects.filter(amphi=school_info.amphi)
 
@@ -351,7 +265,9 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
 
             id_used = []
             all_notes_credit = []
-            concat_note = ''
+            concat_infos = ''
+
+            # Calcul finals notes of student
             for item in allEvaluation.data:
 
                 if item['ue']['id'] not in id_used:
@@ -360,13 +276,14 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
                     note_serializers = EvaluationSerializer(note, many=True)
                     notes = note_serializers.data
 
-                    note_ee = self.determined_intermediare_note(notes)
-                    decision = self.get_letter_grade(note_ee)
+                    note_ee = TranscriptOperation.determined_intermediare_note(
+                        notes)
+                    decision = TranscriptOperation.get_letter_grade(note_ee)
 
                     Evaluation.objects.create(
                         etudiant=Etudiant.objects.get(id=pk),
                         note=note_ee,
-                        examen='EE',
+                        examen=Examen.objects.get(code='EE'),
                         ue=Ue.objects.get(id=item['ue']['id']),
                         grade=decision['grade'],
                         decision=decision['decision'],
@@ -377,7 +294,12 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
                         "credit": item['ue']['credit'],
                         "code": item['ue']['code'],
                     }
-                    concat_note += notes_credit['code']+':'+str(note_ee)+'-'
+
+                    # 1 . We add Notes
+                    format_note = "{:.2f}".format(note_ee)
+                    concat_infos += notes_credit['code']+':' + \
+                        str(format_note)+':'+str(notes_credit['credit'])+'|'
+
                     if(note_ee >= 35):
                         credit_capitalised_sum += item['ue']['credit']
 
@@ -385,7 +307,6 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
                     id_used.append(item['ue']['id'])
 
             note_with_credit = 0.0
-
             for note in all_notes_credit:
                 note_with_credit += note['note']*note['credit']
 
@@ -396,41 +317,59 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
             if(mgp >= 2):
                 final_decision = 'ADMIS'
 
+            # 2. add mgp and decision  to hasher info
+            s = "{:.2f}".format(mgp)
+            print(mgp, s)
+            concat_infos += '-'+str(s)+'|'+final_decision.lower()
+
         # Generate number of transcript
-            name_abrv = self.generate_name_initial(
+            name_abrv = TranscriptOperation.generate_name_initial(
                 etudiant_serializer.data['name'], etudiant_serializer.data['surname'])
+
+            # 3. personnal etudiant info to hasher info
+            concat_infos += '-'+etudiant_serializer.data['name'].lower() + '|'+etudiant_serializer.data['surname'].lower() + \
+                '|'+etudiant_serializer.data['matricule'].lower() + \
+                '|'+etudiant_serializer.data['gender'].lower() + '|' + \
+                etudiant_serializer.data['born_on'] + \
+                '|'+etudiant_serializer.data['born_at'].lower()
+
             abrev_faculty = school_info_serializer.data['amphi']['filiere']['faculty']['abrev']
             filiere = school_info_serializer.data['amphi']['filiere']['name'][:3]
             code_level = school_info_serializer.data['amphi']['level']['code']
             academic_year = school_info_serializer.data['amphi']['academic_year']
             inter = academic_year['name'].split('/')
             abrev_academic_year = inter[0]+inter[1][2:4]
+
+            # 4. add Class info
+            concat_infos += '-'+school_info_serializer.data['amphi']['filiere']['faculty']['abrev'].lower()+'|'+school_info_serializer.data['amphi']['filiere']['name'].lower(
+            ) + '|'+school_info_serializer.data['amphi']['level']['intitule'].lower()+'|'+academic_year['name']
+
         # end generate number of transcript
-
-            # hash_note
-            hash_info = hashlib.new('sha1')
-            hash_info.update(concat_note.encode('utf-8'))
-            public_hash = hash_info.hexdigest()
-
-            transcript_number = str(nbre_transcript_print+1) + '/' + name_abrv + \
+            next_id = TranscriptOperation.get_next_id(Transcript)
+            transcript_number = str(next_id) + '/' + name_abrv + \
                 '/'+code_level+'/'+abrev_faculty+'/'+filiere+'/'+abrev_academic_year
+            # 5. add transcript number
+            concat_infos += '-'+transcript_number.lower()
 
-            msg = transcript_number+'-'+etudiant_serializer.data['matricule']+'-' + etudiant_serializer.data['name'].lower() + \
-                '-' + etudiant_serializer.data['surname'].lower() + '-' + \
-                str(mgp)+'-'+final_decision+'-' + public_hash
-            # msg = SECRET_kEY_HASH+'-'+str(data_transcript)
-
+            print(concat_infos)
+            # hash_info
+            hash_info = hashlib.new('sha1')
+            hash_info.update(concat_infos.encode('utf-8'))
+            statement_footprint = hash_info.hexdigest()
+            hash_save = statement_footprint
+            statement_footprint += 'ID'+str(next_id)
             aes = AESCipher(SECRET_kEY_HASH)
-            cipher = aes.encrypt(msg)
+            cipher = aes.encrypt(statement_footprint)
 
             new_transcript = Transcript.objects.create(
+                id=next_id,
                 etudiant=Etudiant.objects.get(id=pk),
                 mgp=mgp,
                 number=transcript_number,
                 complete_credit=credit_capitalised_sum,
                 decision=final_decision,
                 cipher_info=cipher,
-                hash=public_hash,
+                statement_footprint=hash_save,
                 academic_year=AcademicYear.objects.get(
                     id=school_info_serializer.data['amphi']['academic_year']['id']),
             )
@@ -459,14 +398,19 @@ class DecryptDataViewSet(viewsets.ModelViewSet):
             try:
                 aes = AESCipher(SECRET_kEY_HASH)
                 plaint_data = aes.decrypt(data)
-                transcript_data = plaint_data.split('-')
-                number = transcript_data[0]
-                matricule = transcript_data[1]
-                name = transcript_data[2]
-                surname = transcript_data[3]
-                mgp = transcript_data[4]
-                decision = transcript_data[5]
-                hash = transcript_data[6]
+                transcript_data = plaint_data.split('ID')
+                id = transcript_data[1]
+                hash = transcript_data[0]
+
+                transcript = Transcript.objects.get(id=id)
+                serial_transcript = TranscriptSerializer(transcript)
+
+                number = serial_transcript.data['number']
+                matricule = serial_transcript.data['etudiant']['matricule']
+                name = serial_transcript.data['etudiant']['name']
+                surname = serial_transcript.data['etudiant']['surname']
+                mgp = serial_transcript.data['mgp']
+                decision = serial_transcript.data['decision']
 
                 data_transcript = {
                     "number": number,
@@ -481,7 +425,8 @@ class DecryptDataViewSet(viewsets.ModelViewSet):
                 info_serializers = CipherSerializer(data_transcript)
                 return Response({
                     'data': info_serializers.data,
-                }, status=status.HTT201_CREATED)
+                }, status=status.HTTP_201_CREATED)
+
             except:
                 return Response({
                     'detail': 'Donnees invalides'
@@ -507,26 +452,52 @@ class VerifNewTranscriptViewSet(viewsets.ModelViewSet):
         number = elements['number']
         student = Etudiant.objects.filter(matricule=matricule)
         if(len(student) > 0):
+            concat_infos = ""
             student_info = EtudiantSerializer(student[0]).data
             search = Transcript.objects.filter(
                 etudiant=student_info['id']).filter(number=number)
             if(len(search) > 0):
                 transcript = TranscriptSerializer(search[0]).data
-
+                get_id_exam_ee = Examen.objects.get(code='EE')
                 data_to_hash = transcript['number']+'-'+transcript['etudiant']['matricule']+'-' + transcript['etudiant']['name'].lower() + '-' + \
                     transcript['etudiant']['surname'].lower() + '-'+str(transcript['mgp']) + \
-                    '-'+transcript['decision']+'-'+transcript['hash']
-                print(data_to_hash)
-                print(data_to_compare)
+                    '-'+transcript['decision']+'-' + \
+                    transcript['statement_footprint']
 
-                # hash_note
+                note = Evaluation.objects.filter(
+                    etudiant=student_info['id']).filter(examen=get_id_exam_ee)
+
+                # Concat noteabrev_academic_yeaacademic_yearrabrev_academic_yeaacademic_yearr
+                if(len(note) > 0):
+                    note_serializer = EvaluationSerializer(
+                        note, many=True)
+                    for item in note_serializer.data:
+                        concat_infos += item['ue']['code']+':' + \
+                            str(item['note'])+':'+str(item['ue']['credit'])+'|'
+                concat_infos += '-' + \
+                    str(elements['mgp'])+'|'+elements['decision'].lower()
+                # add personnal info
+                concat_infos += '-'+elements['name'].lower() + '|'+elements['surname'].lower() + \
+                    '|'+elements['matricule'].lower().lower() + \
+                    '|'+student_info['gender'].lower() + '|' + \
+                    student_info['born_on'] + \
+                    '|'+student_info['born_at'].lower()
+                school = SchoolAt.objects.filter(etudiant=student_info['id'])
+                if(len(school) > 0):
+                    school_seralizer = SchoolAtSerializer(school[0])
+                    concat_infos += '-'+school_seralizer.data['amphi']['filiere']['faculty']['abrev'].lower()+'|'+school_seralizer.data['amphi']['filiere']['name'].lower(
+                    ) + '|'+school_seralizer.data['amphi']['level']['intitule'].lower()+'|'+school_seralizer.data['amphi']['academic_year']['name']
+                concat_infos += '-'+number.lower()
+                print(concat_infos)
+
+                # hash_noteevaluations
                 hash_data_to_hash = hashlib.new('sha1')
-                hash_data_to_compare = hashlib.new('sha1')
+                hash_data_to_hash.update(concat_infos.encode('utf-8'))
+                statement_footprint = hash_data_to_hash.hexdigest()
+                print(statement_footprint)
+                print(transcript['statement_footprint'])
 
-                hash_data_to_hash.update(data_to_hash.encode('utf-8'))
-                hash_data_to_compare.update(data_to_compare.encode('utf-8'))
-
-                if(hash_data_to_hash.digest() == hash_data_to_compare.digest()):
+                if(statement_footprint == transcript['statement_footprint']):
                     return Response({
                         'data': transcript['id']
                     })

@@ -124,7 +124,7 @@ class Transcript(models.Model):
     decision = models.CharField(
         max_length=10, default=None, blank=True, null=True)
     cipher_info = models.TextField()
-    hash = models.TextField()
+    statement_footprint = models.TextField()
 
     def __str__(self):
         return self.number
