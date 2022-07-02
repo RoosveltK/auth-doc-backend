@@ -152,7 +152,7 @@ class AddNoteAtViewSet(viewsets.ModelViewSet):
             examen = Examen.objects.filter(id=elements['examen'])
             if(len(etudiant) > 0):
                 is_exist = Evaluation.objects.filter(
-                    etudiant=etudiant[0].id).filter(examen=examen[0].id)
+                    etudiant=etudiant[0].id).filter(examen=examen[0].id).filter(ue=elements['ue'])
                 if(len(is_exist) == 0):
                     Evaluation.objects.create(
                         etudiant=etudiant[0],
