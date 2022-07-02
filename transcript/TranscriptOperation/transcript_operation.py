@@ -19,17 +19,18 @@ class TranscriptOperation:
     def determined_intermediare_note(notes):
         total = 0
         for item in notes:
+
             if(item['ue']['has_tp'] == True):
-                if(item['examen'] == "CC"):
+                if(item['examen']['code'] == "CC"):
                     total += float(item['note'])
-                if(item['examen'] == "SN"):
+                if(item['examen']['code'] == "SN"):
                     total += float(item['note'])*2
-                if(item['examen'] == "TP"):
+                if(item['examen']['code'] == "TP"):
                     total += float(item['note'])*2
             else:
-                if(item['examen'] == "CC"):
+                if(item['examen']['code'] == "CC"):
                     total += float(item['note'])*1.5
-                if(item['examen'] == "SN"):
+                if(item['examen']['code'] == "SN"):
                     total += float(item['note'])*3.5
         return total
 
