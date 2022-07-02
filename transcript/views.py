@@ -283,14 +283,14 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
                     print(note_ee)
                     decision = TranscriptOperation.get_letter_grade(note_ee)
 
-                    # Evaluation.objects.create(
-                    #     etudiant=Etudiant.objects.get(id=pk),
-                    #     note=note_ee,
-                    #     examen=Examen.objects.get(code='EE'),
-                    #     ue=Ue.objects.get(id=item['ue']['id']),
-                    #     grade=decision['grade'],
-                    #     decision=decision['decision'],
-                    # )
+                    Evaluation.objects.create(
+                        etudiant=Etudiant.objects.get(id=pk),
+                        note=note_ee,
+                        examen=Examen.objects.get(code='EE'),
+                        ue=Ue.objects.get(id=item['ue']['id']),
+                        grade=decision['grade'],
+                        decision=decision['decision'],
+                    )
 
                     notes_credit = {
                         "note": decision['mgp'],
@@ -362,27 +362,24 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
             aes = AESCipher(SECRET_kEY_HASH)
             cipher = aes.encrypt(statement_footprint)
 
-            # new_transcript = Transcript.objects.create(
-            #     id=next_id,
-            #     etudiant=Etudiant.objects.get(id=pk),
-            #     mgp=mgp,
-            #     number=transcript_number,
-            #     complete_credit=credit_capitalised_sum,
-            #     decision=final_decision,
-            #     cipher_info=cipher,
-            #     statement_footprint=hash_save,
-            #     academic_year=AcademicYear.objects.get(
-            #         id=school_info_serializer.data['amphi']['academic_year']['id']),
-            # )
-            # new_transcript.save()
-            # search_transcript_serializer = TranscriptNormalSerializer(
-            #     new_transcript)
+            new_transcript = Transcript.objects.create(
+                id=next_id,
+                etudiant=Etudiant.objects.get(id=pk),
+                mgp=mgp,
+                number=transcript_number,
+                complete_credit=credit_capitalised_sum,
+                decision=final_decision,
+                cipher_info=cipher,
+                statement_footprint=hash_save,
+                academic_year=AcademicYear.objects.get(
+                    id=school_info_serializer.data['amphi']['academic_year']['id']),
+            )
+            new_transcript.save()
+            search_transcript_serializer = TranscriptNormalSerializer(
+                new_transcript)
 
-            # return Response({
-            #     'data': search_transcript_serializer.data,
-            # }, status=status.HTTP_201_CREATED)
             return Response({
-                'data': "",
+                'data': search_transcript_serializer.data,
             }, status=status.HTTP_201_CREATED)
 
         else:
