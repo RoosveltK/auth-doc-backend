@@ -154,6 +154,8 @@ CORS_ORIGIN_WHITELIST = (
     'http://localhost:4200',
     'http://localhost:8000',
     'http://localhost:8080',
+    'https://auth-doc-app-roosveltk.vercel.app',
+    'https://auth-doc-app-git-main-roosveltk.vercel.app',
     'https://auth-doc-app.vercel.app'
 )
 
