@@ -430,7 +430,7 @@ class DecryptDataViewSet(viewsets.ModelViewSet):
 
             except:
                 return Response({
-                    'detail': 'Donnees invalides'
+                    'detail': 'Les données contenues dans le Qr code sont invalides'
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         except:
@@ -495,7 +495,7 @@ class VerifNewTranscriptViewSet(viewsets.ModelViewSet):
                 hash_data_to_hash.update(concat_infos.encode('utf-8'))
                 statement_footprint = hash_data_to_hash.hexdigest()
 
-                if(statement_footprint == transcript['statement_footprint']):
+                if(statement_footprint == elements['hash'] and statement_footprint == transcript['statement_footprint']):
                     return Response({
                         'data': transcript['id']
                     })
