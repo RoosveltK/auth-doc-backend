@@ -99,3 +99,10 @@ class TranscriptOperation:
         row = cursor.fetchone()
         cursor.close()
         return row[0]
+
+    # @staticmethod
+    # def determined_mgp_and_decision(all_note, credits):
+    #     for note in all_note:
+    #             note_with_credit += note['note']*note['credit']
+
+    #     mgp = note_with_credit/credits

@@ -50,7 +50,7 @@ class Amphi(models.Model):
 
 class Evaluation(models.Model):
 
-    note = models.DecimalField(max_digits=4, decimal_places=2)
+    note = models.DecimalField(max_digits=5, decimal_places=2)
     decision = models.CharField(
         max_length=10, default=None, blank=True, null=True)
     grade = models.CharField(max_length=5, default=None, blank=True, null=True)

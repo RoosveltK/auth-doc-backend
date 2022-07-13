@@ -280,9 +280,7 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
 
                     note_ee = TranscriptOperation.determined_intermediare_note(
                         notes)
-                    print(note_ee)
                     decision = TranscriptOperation.get_letter_grade(note_ee)
-
                     Evaluation.objects.create(
                         etudiant=Etudiant.objects.get(id=pk),
                         note=note_ee,
@@ -291,7 +289,6 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
                         grade=decision['grade'],
                         decision=decision['decision'],
                     )
-
                     notes_credit = {
                         "note": decision['mgp'],
                         "credit": item['ue']['credit'],
@@ -315,7 +312,6 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
 
             mgp = note_with_credit/credit_sum
             final_decision = 'ECHEC'
-
             mgp = round(mgp, 2)
             if(mgp >= 2):
                 final_decision = 'ADMIS'
