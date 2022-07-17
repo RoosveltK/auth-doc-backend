@@ -45,43 +45,43 @@ class TranscriptOperation:
             decision['grade'] = 'A'
             decision['mgp'] = 4.00
             decision['decision'] = "CA"
-        elif 75 <= notefinale and notefinale <= 79:
+        elif 75 <= notefinale and notefinale <= 79.99:
             decision['grade'] = 'A-'
             decision['mgp'] = 3.70
             decision['decision'] = "CA"
-        elif 70 <= notefinale and notefinale <= 74:
+        elif 70 <= notefinale and notefinale <= 74.99:
             decision['grade'] = 'B+'
             decision['mgp'] = 3.30
             decision['decision'] = "CA"
-        elif 65 <= notefinale and notefinale <= 69:
+        elif 65 <= notefinale and notefinale <= 69.99:
             decision['grade'] = 'B'
             decision['mgp'] = 3.00
             decision['decision'] = "CA"
-        elif 60 <= notefinale and notefinale <= 64:
+        elif 60 <= notefinale and notefinale <= 64.99:
             decision['grade'] = 'B-'
             decision['mgp'] = 2.70
             decision['decision'] = "CA"
-        elif 55 <= notefinale and notefinale <= 59:
+        elif 55 <= notefinale and notefinale <= 59.99:
             decision['grade'] = 'C+'
             decision['mgp'] = 2.30
             decision['decision'] = "CA"
-        elif 50 <= notefinale and notefinale <= 54:
+        elif 50 <= notefinale and notefinale <= 54.99:
             decision['grade'] = 'C'
             decision['mgp'] = 2.00
             decision['decision'] = "CA"
-        elif 45 <= notefinale and notefinale <= 49:
+        elif 45 <= notefinale and notefinale <= 49.99:
             decision['grade'] = 'C-'
             decision['mgp'] = 1.70
             decision['decision'] = "CANT"
-        elif 40 <= notefinale and notefinale <= 44:
+        elif 40 <= notefinale and notefinale <= 44.99:
             decision['grade'] = 'D+'
             decision['mgp'] = 1.30
             decision['decision'] = "CANT"
-        elif 35 <= notefinale and notefinale <= 39:
+        elif 35 <= notefinale and notefinale <= 39.99:
             decision['grade'] = 'D'
             decision['mgp'] = 1.00
             decision['decision'] = "CANT"
-        elif 30 <= notefinale and notefinale <= 34:
+        elif 30 <= notefinale and notefinale <= 34.99:
             decision['grade'] = 'E'
             decision['mgp'] = 0.00
             decision['decision'] = "NC"

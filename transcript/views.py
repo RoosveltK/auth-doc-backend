@@ -276,8 +276,6 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
                     note_serializers = EvaluationSerializer(note, many=True)
                     notes = note_serializers.data
 
-                    print(notes)
-
                     note_ee = TranscriptOperation.determined_intermediare_note(
                         notes)
                     decision = TranscriptOperation.get_letter_grade(note_ee)
@@ -311,13 +309,18 @@ class OperationTranscriptViewSet(viewsets.ModelViewSet):
                 note_with_credit += note['note']*note['credit']
 
             mgp = note_with_credit/credit_sum
+
             final_decision = 'ECHEC'
-            mgp = round(mgp, 2)
+            # mgp = round(mgp, 2)
+
+            x = float(str(mgp)[:4])
+            mgp = x
+            print(mgp)
             if(mgp >= 2):
                 final_decision = 'ADMIS'
 
             # 2. add mgp and decision  to hasher info
-            s = "{:.2f}".format(mgp)
+            s = x
             concat_infos += '-'+str(s)+'|'+final_decision.lower()
 
         # Generate number of transcript

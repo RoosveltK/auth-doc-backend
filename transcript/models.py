@@ -20,6 +20,7 @@ class Faculty(models.Model):
 
 class Filiere(models.Model):
     name = models.CharField(max_length=255)
+    full_name = models.CharField(max_length=255, blank=True, null=True)
     description = models.TextField()
     faculty = models.ForeignKey(
         'Faculty', null=False, on_delete=models.CASCADE)
